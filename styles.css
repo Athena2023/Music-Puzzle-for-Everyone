@@ -1,0 +1,261 @@
+/* General Styles */
+body {
+    font-family: 'Roboto', sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #e6e6e6;
+    color: #333;
+    line-height: 1.6;
+}
+
+h2 {
+    text-align: center;
+    color: #222;
+    font-weight: 700;
+}
+
+/* Header */
+header {
+    background-color: #2c3e50;
+    color: #ecf0f1;
+    padding: 30px;
+    text-align: center;
+    font-size: 2em;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Main Content */
+main {
+    padding: 40px;
+    background-color: #fff;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    border-radius: 10px;
+    max-width: 1200px;
+    margin: 40px auto;
+}
+
+section {
+    width: 80%;
+    margin: 0 auto 40px auto;
+}
+
+/* Puzzle Board and Puzzle Pieces */
+.puzzle-board {
+    display: flex;
+    justify-content: center;
+    min-height: 150px;
+    border: 3px dashed #95a5a6;
+    padding: 30px;
+    flex-wrap: wrap;
+    background-color: #ecf0f1;
+    border-radius: 10px;
+}
+
+.puzzle-board:focus {
+    outline: 3px solid #e67e22; /* Highlight focused puzzle area */
+}
+
+.puzzle-piece {
+    margin: 15px;
+    padding: 20px 30px;
+    font-size: 1.2em;
+    background-color: #3498db;
+    color: white;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: background-color 0.3s, transform 0.3s;
+}
+
+.puzzle-piece:hover,
+.puzzle-piece:focus {
+    background-color: #2980b9;
+    outline: 3px solid #e67e22;
+    transform: scale(1.05);
+}
+
+/* Segment Buttons */
+.segments-list {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.segment-button {
+    margin: 15px;
+    padding: 20px 30px;
+    font-size: 1.2em;
+    cursor: pointer;
+    background-color: #27ae60;
+    color: white;
+    border: none;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: background-color 0.3s, transform 0.3s;
+}
+
+.segment-button:hover,
+.segment-button:focus {
+    background-color: #229954;
+    outline: 3px solid #e67e22;
+    transform: scale(1.05);
+}
+
+/* Control Buttons */
+#controls {
+    display: flex;
+    justify-content: center;
+    margin-top: 30px;
+}
+
+#controls button {
+    margin: 0 15px;
+    padding: 20px 30px;
+    font-size: 1.2em;
+    cursor: pointer;
+    background-color: #e74c3c;
+    color: white;
+    border: none;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: background-color 0.3s, transform 0.3s;
+}
+
+#controls button:hover,
+#controls button:focus {
+    background-color: #c0392b;
+    outline: 3px solid #e67e22;
+    transform: scale(1.05);
+}
+
+#play-puzzle {
+    background-color: #2ecc71;
+}
+
+#play-puzzle:hover,
+#play-puzzle:focus {
+    background-color: #27ae60;
+}
+
+#reset-puzzle {
+    background-color: #e74c3c;
+}
+
+#reset-puzzle:hover,
+#reset-puzzle:focus {
+    background-color: #c0392b;
+}
+
+/* Audio Upload and Segment Count */
+#audio-upload {
+    text-align: center;
+    margin-top: 40px;
+    padding: 20px;
+    background-color: #f9f9f9;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+#audio-upload input[type="file"] {
+    margin: 15px 0;
+}
+
+#audio-upload label {
+    font-size: 1.1em;
+    color: #333;
+    font-weight: 600;
+}
+
+#segment-count {
+    width: 60px;
+    margin-left: 15px;
+    font-size: 1em;
+    padding: 8px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+}
+
+#process-audio {
+    padding: 12px 25px;
+    font-size: 1em;
+    background-color: #f39c12;
+    color: white;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: background-color 0.3s, transform 0.3s;
+}
+
+#process-audio:hover,
+#process-audio:focus {
+    background-color: #e67e22;
+    outline: 3px solid #e67e22;
+    transform: scale(1.05);
+}
+
+/* Audio Controls */
+#audio-controls {
+    display: flex;
+    justify-content: center;
+    margin-top: 30px;
+}
+
+#audio-controls button,
+#audio-controls input {
+    margin: 0 15px;
+    padding: 12px;
+    font-size: 1em;
+    cursor: pointer;
+    background-color: #e74c3c;
+    color: white;
+    border: none;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: background-color 0.3s, transform 0.3s;
+}
+
+#audio-controls button:hover,
+#audio-controls button:focus {
+    background-color: #c0392b;
+    outline: 3px solid #e67e22;
+    transform: scale(1.05);
+}
+
+#audio-controls input {
+    width: 70px;
+    text-align: center;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+}
+
+main {
+    display: flex;
+    justify-content: space-between;
+    max-width: 1200px;
+    margin: 40px auto;
+    padding: 20px;
+    background-color: #fff;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    border-radius: 10px;
+}
+
+
+.left-column {
+    width: 30%; /* 调整左侧栏的宽度，使其边窄 */
+    padding-right: 10px;
+    box-sizing: border-box;
+    border-right: 2px solid #ccc;
+    padding-right: 20px;
+}
+
+.right-column {
+    width: 68%;
+    padding-left: 10px;
+    box-sizing: border-box;
+}
+
+main {
+    display: flex;
+    justify-content: space-between;
+}
