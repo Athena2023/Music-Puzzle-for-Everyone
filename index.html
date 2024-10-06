@@ -53,19 +53,6 @@
         </div>
     </main>
 
-    <!-- 添加全局键盘事件监听器，实现利用 Alt + x 和 Alt + c 键切换左右栏 -->
-    <script>
-        document.addEventListener('keydown', (event) => {
-            if (event.altKey && event.key === 'x') {
-                // 将焦点移动到左侧栏
-                document.querySelector('.left-column').focus({ preventScroll: false });
-            } else if (event.altKey && event.key === 'c') {
-                // 将焦点移动到右侧栏
-                document.querySelector('.right-column').focus({ preventScroll: false });
-            }
-        });
-    </script>
-
     <!-- 引入 JavaScript 文件 -->
     <script src="app.js"></script>
 </body>
