@@ -1,28 +1,34 @@
+    // 音乐拼图游戏
 document.addEventListener('DOMContentLoaded', () => {
-    // 音乐片段数据，将在用户上传音频后生成
     let segments = [];
     let puzzlePieces = [];
-    let correctSequence = []; // 用于存储正确的片段顺序
+    let correctSequence = []; 
+    let currentPlayingSegment = null;
 
+    /**************************************************
+    模块 1: 初始化
+    ***************************************************/
+   
     // 获取 DOM 元素
+   
+    const audioFileInput = document.getElementById('audio-file-input');
+    const segmentCountInput = document.getElementById('segment-count');
     const segmentButtonsContainer = document.querySelector('.segments-list');
     const puzzleBoard = document.querySelector('.puzzle-board');
     const playPuzzleButton = document.getElementById('play-puzzle');
     const resetPuzzleButton = document.getElementById('reset-puzzle');
-    const audioFileInput = document.getElementById('audio-file-input');
     const processAudioButton = document.getElementById('process-audio');
-    const segmentCountInput = document.getElementById('segment-count');
-
-    // 获取新添加的按钮和输入框
     const rewindButton = document.getElementById('rewind-10s');
     const forwardButton = document.getElementById('forward-10s');
     const jumpTimeInput = document.getElementById('jump-time');
     const jumpButton = document.getElementById('jump-button');
 
-    // 当前播放的音频片段
-    let currentPlayingSegment = null;
+    /**************************************************
+    模块 2: 音频读取及处理
+    ***************************************************/
 
-    // 当用户点击“处理音频并开始游戏”按钮时
+    //---------------------主函数--------------------------
+    // 读取完整音频文件及用户分段数量（为“处理音频”按钮添加事件监听器）
     processAudioButton.addEventListener('click', () => {
         const file = audioFileInput.files[0];
         const segmentCount = parseInt(segmentCountInput.value);
@@ -34,10 +40,8 @@ document.addEventListener('DOMContentLoaded', () => {
             speak('请指定一个有效的片段数量，2到10之间');
             return;
         }
-
-        // 开始处理音频，使用语音提示
         speak('正在处理音频，请稍候');
-
+        
         const reader = new FileReader();
         reader.onload = function(event) {
             const arrayBuffer = event.target.result;
@@ -46,22 +50,20 @@ document.addEventListener('DOMContentLoaded', () => {
         reader.readAsArrayBuffer(file);
     });
 
-    // 定义 AudioContext
+    // 初始化音频
     const AudioContext = window.AudioContext || window.webkitAudioContext;
     const audioContext = new AudioContext();
 
-    // 处理音频文件
+    // 切割音频文件并生成音频片段
     function processAudio(arrayBuffer, segmentCount) {
         audioContext.decodeAudioData(arrayBuffer, function(audioBuffer) {
-            // 将音频分割成用户指定的段数
+
             const segmentDuration = audioBuffer.duration / segmentCount;
 
             const segmentBlobs = [];
             for (let i = 0; i < segmentCount; i++) {
                 const startTime = i * segmentDuration;
                 const endTime = (i + 1) * segmentDuration;
-
-                // 提取音频片段
                 const segmentBuffer = extractAudioSegment(audioBuffer, startTime, endTime);
                 // 将 AudioBuffer 转换为 Blob
                 const segmentBlob = bufferToWave(segmentBuffer, 0, segmentBuffer.length);
@@ -70,7 +72,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // 将分割后的音频片段转换为 Audio 对象，供游戏使用
             segments = segmentBlobs.map((blob, index) => {
-                const url = URL.createObjectURL(blob);
+                const url = URL.createObjectURL(blob); //生成一个可以在浏览器中使用的 URL
                 const audio = new Audio(url);
                 return {
                     id: index + 1, // 原始顺序的 ID
@@ -87,13 +89,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // 为打乱后的片段生成新的标签
             segments.forEach((segment, index) => {
-                segment.label = `片段 ${index + 1}`; // 重新编号，与原始顺序无关
+                segment.label = `片段 ${index + 1}`; // 重新编号
             });
 
             // 初始化游戏
             initializeGameWithSegments();
 
-            // 处理完成，使用语音提示
             speak('音频处理完成，游戏开始');
 
         }, function(error) {
@@ -102,6 +103,8 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    //---------------------函数的定义--------------------------
+    
     // Fisher-Yates 洗牌算法
     function shuffleArray(array) {
         for (let i = array.length - 1; i > 0; i--) {
@@ -116,8 +119,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const startSample = Math.floor(startTime * sampleRate);
         const endSample = Math.floor(endTime * sampleRate);
         const segmentDuration = endSample - startSample;
-
-        // 为每个声道创建新缓冲区
+        // 创建新的 AudioBuffer
         const numberOfChannels = audioBuffer.numberOfChannels;
         const segmentBuffer = audioContext.createBuffer(numberOfChannels, segmentDuration, sampleRate);
 
@@ -141,21 +143,24 @@ document.addEventListener('DOMContentLoaded', () => {
             pos = 0;
 
         // 写入 WAV 文件头部
-        setUint32(0x46464952); // "RIFF"
-        setUint32(length - 8); // 文件长度
-        setUint32(0x45564157); // "WAVE"
+        setUint32(0x46464952);       // "RIFF" 标记
+        setUint32(length - 8);       // 文件长度
+        setUint32(0x45564157);       // "WAVE" 标记
 
-        setUint32(0x20746d66); // "fmt " chunk
-        setUint32(16); // 头部长度
-        setUint16(1); // PCM 格式
-        setUint16(numOfChan);
-        setUint32(abuffer.sampleRate);
-        setUint32(abuffer.sampleRate * 2 * numOfChan);
-        setUint16(numOfChan * 2);
-        setUint16(16);
+        // "fmt " chunk，用于描述音频格式
+        setUint32(0x20746d66);       // "fmt " 标记
+        setUint32(16);               // "fmt " 的头部长度
+        setUint16(1);                // 音频格式，1 表示 PCM 格式
+        setUint16(numOfChan);        // 通道数
+        setUint32(abuffer.sampleRate);  // 采样率
+        setUint32(abuffer.sampleRate * 2 * numOfChan); // 字节率（采样率 × 通道数 × 每个采样的字节数）
+        setUint16(numOfChan * 2);    // 每个采样的字节数
+        setUint16(16);               // 每个采样的位深
 
-        setUint32(0x61746164); // "data" chunk
-        setUint32(length - pos - 4);
+        // "data" chunk，用于存储音频数据
+        setUint32(0x61746164);       // "data" 标记
+        setUint32(length - pos - 4); // 音频数据的长度
+
 
         // 写入音频数据
         for (i = 0; i < numOfChan; i++)
@@ -165,7 +170,7 @@ document.addEventListener('DOMContentLoaded', () => {
             for (i = 0; i < numOfChan; i++) {
                 sample = Math.max(-1, Math.min(1, channels[i][offset])); // 限制在 [-1, 1]
                 sample = (sample * 32767) | 0; // 转换为 16 位整数
-                view.setInt16(pos, sample, true); // 写入数据
+                view.setInt16(pos, sample, true); 
                 pos += 2;
             }
             offset++;
@@ -184,7 +189,13 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // 初始化游戏界面，使用新的音频片段
+    /**************************************************
+    模块 3: 游戏初始化与控制模块
+    ***************************************************/
+
+    //---------------------主函数--------------------------
+
+    // 初始化游戏界面
     function initializeGameWithSegments() {
         // 清空之前的音乐片段按钮
         segmentButtonsContainer.innerHTML = '';
@@ -220,20 +231,20 @@ document.addEventListener('DOMContentLoaded', () => {
         puzzlePieces = [];
     }
 
+    //---------------------函数的定义--------------------------
+
     // 播放/暂停音频片段
     function toggleSegmentPlayback(segment) {
-        // 控制音频的播放和暂停
         if (segment.isPlaying) {
             segment.audio.pause();
             segment.isPlaying = false;
             speak(`${segment.label} 已暂停`);
         } else {
-            // 停止其他正在播放的音频
             stopAllAudio();
             segment.audio.currentTime = 0;
             segment.audio.play();
             segment.isPlaying = true;
-            currentPlayingSegment = segment;  // 更新当前播放的片段
+            currentPlayingSegment = segment;
             speak(`正在播放${segment.label}`);
         }
     }
@@ -266,21 +277,16 @@ document.addEventListener('DOMContentLoaded', () => {
         pieceElement.setAttribute('aria-label', `拼图片段：${segment.label}`);
         pieceElement.setAttribute('role', 'listitem');
 
-        // 添加到拼图区域
+        // 添加到拼图区域并更新拼图数组
         puzzleBoard.appendChild(pieceElement);
-
-        // 更新拼图片段数组
         puzzlePieces.push(segment);
-
-        // 添加语音反馈
         speak(`${segment.label} 已添加到拼图`);
 
-        // 为拼图片段添加点击事件，控制播放和暂停
+        // 为拼图片段添加播放控制事件
         pieceElement.addEventListener('click', () => {
             toggleSegmentPlayback(segment);
         });
 
-        // 添加键盘事件
         pieceElement.addEventListener('keydown', (event) => {
             if (event.key === 'Enter' || event.key === ' ') {
                 event.preventDefault();
@@ -294,19 +300,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 移除拼图片段
     function removePieceFromPuzzle(pieceElement, segment) {
-        // 从拼图区域移除元素
         puzzleBoard.removeChild(pieceElement);
 
-        // 从拼图片段数组中移除对应的片段
         puzzlePieces = puzzlePieces.filter(s => s.id !== segment.id);
 
-        // 停止音频播放
         if (segment.isPlaying) {
             segment.audio.pause();
             segment.isPlaying = false;
         }
 
-        // 添加语音反馈
         speak(`${segment.label} 已从拼图中移除`);
 
         // 将焦点设置到拼图区域的下一个拼图片段，或返回到拼图区域
@@ -318,14 +320,14 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    //---------------------拼图检查与结果输出--------------------------
+
     // 为“播放拼图”按钮添加事件监听器
     playPuzzleButton.addEventListener('click', () => {
         if (puzzlePieces.length === 0) {
             speak('拼图为空，请先添加音乐片段');
             return;
         }
-
-        // 依次播放拼图片段
         playPuzzlePieces(0);
     });
 
@@ -341,12 +343,10 @@ document.addEventListener('DOMContentLoaded', () => {
     function playPuzzlePieces(index) {
         if (index < puzzlePieces.length) {
             const segment = puzzlePieces[index];
-            // 停止当前正在播放的音频
             stopAllAudio();
     
             // 更新当前播放的片段
             currentPlayingSegment = segment;
-    
             segment.audio.currentTime = 0;
             segment.audio.play();
             segment.isPlaying = true;
@@ -357,10 +357,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 playPuzzlePieces(index + 1);
             };
         } else {
-            // 拼图播放完成
+
             speak('拼图播放完成');
-    
-            // 检查拼图是否正确
             checkPuzzleCorrectness();
         }
     }
@@ -378,7 +376,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // 判断两个数组是否相等
     function arraysEqual(a, b) {
         if (a.length !== b.length) return false;
         for (let i = 0; i < a.length; i++) {
@@ -389,30 +386,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 播放“恭喜，拼对了”的音频
     function playCongratulationsAudio() {
-        // 如果您有音频文件，可以使用以下代码
-        // const congratsAudio = new Audio('audio/congrats.mp3');
-        // congratsAudio.play();
-
-        // 如果没有音频文件，可以使用语音合成
         speak('恭喜，拼对了');
     }
 
-    // 为“重置拼图”按钮添加事件监听器
+    // 重置拼图
     resetPuzzleButton.addEventListener('click', () => {
-        // 清空拼图区域
         puzzleBoard.innerHTML = '';
-
-        // 清空拼图片段数组
         puzzlePieces = [];
-
-        // 停止所有音频播放
         stopAllAudio();
-
-        // 添加语音反馈
         speak('拼图已重置');
     });
 
-    // 添加键盘事件
     resetPuzzleButton.addEventListener('keydown', (event) => {
         if (event.key === 'Enter' || event.key === ' ') {
             event.preventDefault();
@@ -420,17 +404,20 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+    /**************************************************
+    模块 4: 语音反馈与全局事件模块
+    ***************************************************/
+
     // 语音反馈函数
     function speak(text) {
         const utterance = new SpeechSynthesisUtterance(text);
-        // 设置语言为中文
         utterance.lang = 'zh-CN';
         window.speechSynthesis.speak(utterance);
     }
 
-    // 添加全局键盘事件监听器
+    // 全局键盘事件监听器
     document.addEventListener('keydown', (event) => {
-        // 检查是否在文本输入框中，以避免干扰输入
+        // 忽略文本输入框中的按键
         if (['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName)) {
             return;
         }
@@ -442,8 +429,9 @@ document.addEventListener('DOMContentLoaded', () => {
         } else if (event.key === 'ArrowLeft') {
             event.preventDefault();
             moveFocus('previous');
-        } else if (event.key === 'Delete' || event.key === 'Backspace') {
-            // 如果焦点在拼图片段上，删除该拼图片段
+        } 
+        // 删除键（Delete 或 Backspace）用于移除拼图片段
+        else if (event.key === 'Delete' || event.key === 'Backspace') {
             if (document.activeElement.classList.contains('puzzle-piece')) {
                 event.preventDefault();
                 const pieceElement = document.activeElement;
@@ -453,55 +441,66 @@ document.addEventListener('DOMContentLoaded', () => {
                     removePieceFromPuzzle(pieceElement, segment);
                 }
             }
-        } else if (event.key === ' ') {
-            // 空格键停止所有音频
+        } 
+        // 空格键停止所有音频
+        else if (event.key === ' ') {
             event.preventDefault();
             stopAllAudio();
             speak('所有音频已停止');
-        } else if (event.altKey && event.key === 'p') {
-            // Alt + P 播放拼图
+        } 
+        // Alt + P 播放拼图
+        else if (event.altKey && event.key === 'p') {
             event.preventDefault();
             playPuzzleButton.click();
-        } else if (event.altKey && event.key === 'r') {
-            // Alt + R 重置拼图
+        } 
+        // Alt + R 重置拼图
+        else if (event.altKey && event.key === 'r') {
             event.preventDefault();
             resetPuzzleButton.click();
-        } else if (event.altKey && event.key >= '1' && event.key <= '9') {
-            // Alt + 1/2/3... 选择对应的音乐片段
+        } 
+        // Alt + 1-9 播放特定音频片段
+        else if (event.altKey && event.key >= '1' && event.key <= '9') {
             event.preventDefault();
             const index = parseInt(event.key) - 1;
             if (segments[index]) {
                 toggleSegmentPlayback(segments[index]);
                 addPieceToPuzzle(segments[index]);
             }
-        } else if (event.key === 'f') {
-            // 快进 10 秒 - 按 'f'
+        } 
+        // 快进和快退快捷键
+        else if (event.key === 'f') {
             event.preventDefault();
             forwardButton.click();
         } else if (event.key === 'b') {
-            // 快退 10 秒 - 按 'b'
             event.preventDefault();
             rewindButton.click();
-        } else if (event.key === 'j') {
-            // 跳转到指定时间 - 按 'j'
+        } 
+        // 跳转快捷键
+        else if (event.key === 'j') {
             event.preventDefault();
             jumpButton.click();
         }
+        // 焦点移动快捷键
+        else if (event.altKey && event.key === 'x') {
+            // 移动焦点到左侧栏
+            document.querySelector('.left-column').focus({ preventScroll: false });
+            speak('已跳转到左侧栏');
+        } else if (event.altKey && event.key === 'c') {
+            // 移动焦点到右侧栏
+            document.querySelector('.right-column').focus({ preventScroll: false });
+            speak('已跳转到右侧栏');
+        }
     });
 
+    // 焦点移动函数
     function moveFocus(direction) {
-        // 获取所有可聚焦的元素
         const focusableElements = Array.from(document.querySelectorAll('button, .puzzle-board[tabindex]'));
 
-        // 过滤可见的元素
-        const visibleFocusableElements = focusableElements.filter(elem => {
-            return elem.offsetParent !== null;
-        });
-
+        // 过滤可见元素
+        const visibleFocusableElements = focusableElements.filter(elem => elem.offsetParent !== null);
         const currentIndex = visibleFocusableElements.indexOf(document.activeElement);
 
         let nextIndex;
-
         if (direction === 'next') {
             nextIndex = (currentIndex + 1) % visibleFocusableElements.length;
         } else if (direction === 'previous') {
@@ -510,6 +509,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         visibleFocusableElements[nextIndex].focus();
     }
+
 
     // 快退 10 秒
     rewindButton.addEventListener('click', () => {
@@ -543,15 +543,4 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    document.addEventListener('keydown', (event) => {
-        if (event.altKey && event.key === 'f') {
-            // 将焦点移动到左侧栏
-            document.querySelector('.left-column').focus({ preventScroll: false });
-            speak('已跳转到左侧栏');
-        } else if (event.altKey && event.key === 'j') {
-            // 将焦点移动到右侧栏
-            document.querySelector('.right-column').focus({ preventScroll: false });
-            speak('已跳转到右侧栏');
-        }
-    });
 });
